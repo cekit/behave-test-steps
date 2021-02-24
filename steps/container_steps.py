@@ -142,11 +142,12 @@ def start_container_with_args_and_env(context, pname="java"):
 @given(u'container is started as uid {uid}')
 @when(u'container is started as uid {uid}')
 @when(u'container is started as uid {uid} with process {pname}')
-def start_container(context, uid, pname="java"):
+@when(u'container {name} is started as uid {uid}')
+def start_container(context, uid, name="", pname="java"):
     # we get UID as string from behave, so we compare to string "0" for python3 compatibility
     if uid < "0":
         raise Exception("UID %d is negative" % uid)
-    container = Container(context.config.userdata['IMAGE'], save_output=False, name=context.scenario.name)
+    container = Container(name + context.config.userdata['IMAGE'], save_output=False, name=context.scenario.name)
     container.start(user=uid)
     context.containers.append(container)
     wait_for_process(context, pname)
