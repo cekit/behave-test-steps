@@ -41,6 +41,7 @@ def s2i_inner(context, application, path='.', env="", incremental=False, tag="ma
         context.config.userdata['s2i_build_log'] = output
     return output
 
+@given(u's2i build {application} from {path} without running')
 @given(u's2i build {application} from {path} with env and {incremental} using {tag} without running')
 def s2i_build_no_run(context, application, path='.', env="", incremental=False, tag="master"):
     s2i_build(context, application, path, env, incremental, tag, False, "")
