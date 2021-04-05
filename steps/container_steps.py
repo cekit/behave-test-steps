@@ -22,10 +22,12 @@ def log_matches_regex(context, regex, timeout=TIMEOUT):
     if not run_log_matches_regex(context, regex, timeout):
         raise Exception("Regex '%s' did not match the logs" % regex)
 
+
 @then(u'exactly {num} times container log should contain {message}')
 def log_contains_msg_multiple_times(context, message, num, timeout=TIMEOUT):
     if not run_log_contains_msg_multiple_times(context, message, num, timeout):
         raise Exception("Message '%s' was not found %s times in the logs" % (message, num))
+
 
 @then(u'container log should contain {message}')
 def log_contains_msg(context, message, timeout=TIMEOUT):
@@ -212,6 +214,7 @@ def run_log_contains_msg(context, message, timeout):
     else:
         return False
 
+
 def run_log_contains_msg_multiple_times(context, message, num, timeout):
     """
     Main method that handles checking the container log
@@ -228,14 +231,16 @@ def run_log_contains_msg_multiple_times(context, message, num, timeout):
         logs = container.get_output().decode()
         count = logs.count(message)
         if count > expected:
-            logging.info("Message '%s' was found in the logs %d times although expected is %d" % (message, count, expected))
-            return False  
+            logging.info(
+                "Message '%s' was found in the logs %d times although expected is %d" % (message, count, expected))
+            return False
         if time.time() > start_time + timeout:
             if count == expected:
                 logging.info("Message '%s' was found in the logs %d times" % (message, expected))
                 return True
             else:
-                logging.info("Message '%s' was found in the logs %d times although expected is %d" % (message, count, expected))
+                logging.info(
+                    "Message '%s' was found in the logs %d times although expected is %d" % (message, count, expected))
                 break
         # TODO: Add customization option for sleep time
         time.sleep(1)
@@ -250,7 +255,8 @@ def check_that_paths_are_writeable(context, path):
     user = container.execute(cmd="id -u").strip().decode()
     group = container.execute(cmd="id -g").strip().decode()
 
-    output = container.execute(cmd="find %s ! ( ( -user %s -perm -u=w ) -o ( -group %s -perm -g=w ) ) -ls" % (path, user, group))
+    output = container.execute(
+        cmd="find %s ! ( ( -user %s -perm -u=w ) -o ( -group %s -perm -g=w ) ) -ls" % (path, user, group))
 
     if len(output) is 0:
         return True
@@ -289,8 +295,8 @@ def run_command_once(context, cmd):
 
 @then(u'run {cmd} in container and detach')
 def run_command_and_detach(context, cmd):
-        container = context.containers[-1]
-        container.execute(cmd=cmd, detach=True)
+    container = context.containers[-1]
+    container.execute(cmd=cmd, detach=True)
 
 
 @then(u'run {cmd} in container and check its output for {output_phrase}')
@@ -315,8 +321,10 @@ def run_command_expect_message(context, cmd, output_phrase, timeout=80):
                     return True
             except ExecException as e:
                 last_output = e.output
+                exception_cause = e
                 time.sleep(1)
-    raise Exception("Phrase '%s' was not found in the output of running the '%s' command" % (output_phrase, cmd), last_output)
+    raise Exception("Phrase '%s' was not found in the output of running the '%s' command" % (output_phrase, cmd),
+                    last_output, exception_cause)
 
 
 @then('file {filename} should contain {phrase}')
@@ -329,6 +337,7 @@ def file_should_contain(context, filename, phrase):
 def file_should_not_contain(context, filename, phrase):
     filename = context.variables.get(filename[1:], filename)
     run_command_unexpect_message(context, 'cat %s' % filename, phrase, timeout=10)
+
 
 @then(u'inspect container')
 def inspect_container(context):
@@ -363,6 +372,7 @@ def inspect_container(context):
                 raise Exception("Value '%s' not present" % value)
         elif str(location) != value:
             raise Exception("Value '%s' not present" % value)
+
 
 @then(u'copy {src_file} to {dest_folder} in container')
 def copy_file_to_container(context, src_file, dest_folder):
