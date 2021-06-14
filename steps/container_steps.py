@@ -71,11 +71,12 @@ def available_log_not_contains_msg(context, message):
 @given(u'container is started with env')
 @when(u'container is started with env')
 @when(u'container is started with env with process {pname}')
-def start_container(context, pname="java"):
+@when(u'container {name} is started with env')
+def start_container(context, pname="java", name=""):
     env = {}
     for row in context.table:
         env[row['variable']] = row['value']
-    container = Container(context.config.userdata['IMAGE'], name=context.scenario.name)
+    container = Container(name + context.config.userdata['IMAGE'], name=context.scenario.name)
     container.start(environment=env)
     context.containers.append(container)
     wait_for_process(context, pname)
@@ -83,11 +84,12 @@ def start_container(context, pname="java"):
 
 @given(u'container is started with args')
 @when(u'container is started with args')
-def start_container_with_args(context, pname="java"):
+@when(u'container {name} is started with args')
+def start_container_with_args(context, pname="java", name=""):
     kwargs = {}
     for row in context.table:
         kwargs[row['arg']] = row['value']
-    container = Container(context.config.userdata['IMAGE'], name=context.scenario.name)
+    container = Container(name + context.config.userdata['IMAGE'], name=context.scenario.name)
     container.start(**kwargs)
     context.containers.append(container)
     wait_for_process(context, pname)
@@ -122,7 +124,8 @@ def image(context):
 
 @given(u'container is started with args and env')
 @when(u'container is started with args and env')
-def start_container_with_args_and_env(context, pname="java"):
+@when(u'container {name} is started with args and env')
+def start_container_with_args_and_env(context, pname="java", name=""):
     kwargs = {}
     env = {}
     for row in context.table:
@@ -133,7 +136,7 @@ def start_container_with_args_and_env(context, pname="java"):
         else:
             raise Exception("Invalid argument or variable '%s', it should prefixed with 'arg' for arguments or 'env' "
                             "for variables" % row['arg_env'])
-    container = Container(context.config.userdata['IMAGE'], name=context.scenario.name)
+    container = Container(name + context.config.userdata['IMAGE'], name=context.scenario.name)
     container.start(environment=env, **kwargs)
     context.containers.append(container)
     wait_for_process(context, pname)
