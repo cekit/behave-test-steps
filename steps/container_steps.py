@@ -255,7 +255,7 @@ def check_that_paths_are_writeable(context, path):
 
     output = container.execute(cmd="find %s ! ( ( -user %s -perm -u=w ) -o ( -group %s -perm -g=w ) ) -ls" % (path, user, group))
 
-    if len(output) is 0:
+    if len(output) == 0:
         return True
 
     raise Exception("Not all files on %s path are writeable by %s user or %s group" % (path, user, group), output)
