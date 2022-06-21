@@ -63,7 +63,7 @@ def _execute(command, log_output=True):
 
         retcode = proc.wait()
 
-        if retcode is not 0:
+        if retcode != 0:
             logging.error(
                 "Command '%s' returned code was %s, check logs" % (command, retcode))
             return False

@@ -1,0 +1,53 @@
+name: run behave-test-steps on OpenJDK 17 Runtime Image
+on: [push, pull_request]
+env:
+  LANG:                         en_US.UTF-8
+  CEKIT_VERSION:                4.1.1
+  OPENJDK_CONTAINER_SOURCE_TAG: openjdk-containers-1.13
+  OPENJDK_CONTAINER:            ubi8/openjdk-17-runtime
+  OPENJDK_CONTAINER_VERSION:    1.13
+  OPENJDK_CONTAINER_DESCRIPTOR: ubi8-openjdk-17-runtime.yaml
+  PYTHON: python3.8 # this is what ubuntu-latest provides right now
+jobs:
+  openjdkci:
+    name: OpenJDK Runtime Build and Test
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v2
+      - name: fetch openjdk runtime image
+        run: |
+          docker pull registry.access.redhat.com/${{ env.OPENJDK_CONTAINER }}:${{ env.OPENJDK_CONTAINER_VERSION }}
+          docker tag  registry.access.redhat.com/${{ env.OPENJDK_CONTAINER }}:${{ env.OPENJDK_CONTAINER_VERSION }} \
+            ${{ env.OPENJDK_CONTAINER }}:${{ env.OPENJDK_CONTAINER_VERSION }}
+      - name: Setup required system packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libkrb5-dev virtualenv
+      - name: Setup virtualenv and install cekit and required packages
+        run: |
+          mkdir ~/cekit${{ env.CEKIT_VERSION }}
+          virtualenv -p ${{ env.PYTHON }} ~/cekit${{ env.CEKIT_VERSION }}
+          . ~/cekit${{ env.CEKIT_VERSION }}/bin/activate
+          pip3 install cekit==${{ env.CEKIT_VERSION }} docker behave lxml
+          # docker-squash odcs lxml
+
+# even though we don't run any S2I tests for the runtime images, the test suite
+# will fail to start if the s2i binary is not present.
+      - name: mock s2i binary
+        run: sudo ln -s /usr/bin/echo /usr/bin/s2i
+
+      - name: clone openjdk container sources
+        run: |
+          git clone https://github.com/jboss-container-images/openjdk.git ~/openjdk-container
+          cd ~/openjdk-container
+          git checkout ${{ env.OPENJDK_CONTAINER_SOURCE_TAG }}
+
+      - name: Run behave tests
+        run: |
+          . ~/cekit${{ env.CEKIT_VERSION }}/bin/activate
+          STEPSDIR=$(pwd)
+          git tag v1 # cekit hard-codes using ref v1
+          cd ~/openjdk-container
+          cekit -v --descriptor ${{ env.OPENJDK_CONTAINER_DESCRIPTOR }} test behave --steps-url file://$STEPSDIR

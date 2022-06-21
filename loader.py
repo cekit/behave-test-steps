@@ -36,7 +36,8 @@ class StepsLoader(object):
         }
 
         deps['s2i'] = {
-            'executable': 's2i'
+            'executable': 's2i',
+            'package': 'https://github.com/openshift/source-to-image'
         }
 
         return deps
