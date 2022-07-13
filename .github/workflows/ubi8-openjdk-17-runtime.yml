@@ -2,7 +2,6 @@ name: run behave-test-steps on OpenJDK 17 Runtime Image
 on: [push, pull_request]
 env:
   LANG:                         en_US.UTF-8
-  CEKIT_VERSION:                4.1.1
   OPENJDK_CONTAINER_SOURCE_TAG: openjdk-containers-1.13
   OPENJDK_CONTAINER:            ubi8/openjdk-17-runtime
   OPENJDK_CONTAINER_VERSION:    1.13
@@ -15,6 +14,12 @@ jobs:
     strategy:
       fail-fast: false
     steps:
+      - id: cekit_version
+        uses: pozetroninc/github-action-get-latest-release@master
+        with:
+          owner: cekit
+          repo: cekit
+          excludes: prerelease, draft
       - uses: actions/checkout@v2
       - name: fetch openjdk runtime image
         run: |
@@ -27,10 +32,10 @@ jobs:
           sudo apt-get install -y libkrb5-dev virtualenv
       - name: Setup virtualenv and install cekit and required packages
         run: |
-          mkdir ~/cekit${{ env.CEKIT_VERSION }}
-          virtualenv -p ${{ env.PYTHON }} ~/cekit${{ env.CEKIT_VERSION }}
-          . ~/cekit${{ env.CEKIT_VERSION }}/bin/activate
-          pip3 install cekit==${{ env.CEKIT_VERSION }} docker behave lxml
+          mkdir ~/cekit${{ steps.cekit_version.outputs.release }}
+          virtualenv -p ${{ env.PYTHON }} ~/cekit${{ steps.cekit_version.outputs.release }}
+          . ~/cekit${{ steps.cekit_version.outputs.release }}/bin/activate
+          pip3 install cekit==${{ steps.cekit_version.outputs.release }} docker behave lxml
           # docker-squash odcs lxml
 
 # even though we don't run any S2I tests for the runtime images, the test suite
@@ -46,7 +51,7 @@ jobs:
 
       - name: Run behave tests
         run: |
-          . ~/cekit${{ env.CEKIT_VERSION }}/bin/activate
+          . ~/cekit${{ steps.cekit_version.outputs.release }}/bin/activate
           STEPSDIR=$(pwd)
           git tag v1 # cekit hard-codes using ref v1
           cd ~/openjdk-container
