@@ -57,7 +57,7 @@ class Container(object):
         self.save_output = save_output
         self.remove_image = remove_image
         self.kwargs = kwargs
-        self.logging = logging.getLogger("dock.middleware.container")
+        self.logging = logging.getLogger("cekit")
         self.running = False
         self.volumes = volumes
         self.environ = {}
@@ -234,7 +234,7 @@ class Container(object):
         self.logging.debug("Creating container from image '%s'..." % self.image_id)
 
         # we need to split kwargs to the args with belongs to create_host_config and
-        # create_container - be aware - this moved to differnet place for new docker
+        # create_container - be aware - this moved to different place for new docker
         # python API
         host_c_args_names = docker.utils.utils.create_host_config.__code__.co_varnames
         host_c_args_names = list(host_c_args_names) + ['cpu_quota', 'cpu_period', 'mem_limit']
@@ -246,6 +246,8 @@ class Container(object):
                 except:
                     pass
 
+        debug = " ".join(f"-e {k}={v}" for k,v in kwargs.get("environment").items())
+        self.logging.debug(f"Creating docker container with arguments and image: {debug} {self.image_id}")
         self.container = d.create_container(image=self.image_id,
                                             detach=True,
                                             entrypoint=self.entrypoint,
