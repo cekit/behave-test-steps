@@ -6,7 +6,7 @@ env:
   OPENJDK_CONTAINER:            ubi8/openjdk-17-runtime
   OPENJDK_CONTAINER_VERSION:    1.13
   OPENJDK_CONTAINER_DESCRIPTOR: ubi8-openjdk-17-runtime.yaml
-  PYTHON: python3.8 # this is what ubuntu-latest provides right now
+  PYTHON: python3.10 # this is what ubuntu-latest provides right now
 jobs:
   openjdkci:
     name: OpenJDK Runtime Build and Test
