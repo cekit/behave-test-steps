@@ -7,7 +7,7 @@ from container import Container, ExecException
 
 LOG_FORMAT = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 logging.basicConfig(format=LOG_FORMAT)
-
+logger = logging.getLogger("cekit")
 
 @when(u'container is ready')
 def container_is_started(context, pname="java"):
@@ -191,7 +191,7 @@ def run_log_matches_regex(context, regex, timeout):
     while True:
         logs = container.get_output().decode()
         if re.search(regex, logs, re.MULTILINE):
-            logging.info("regex '%s' matched the logs" % regex)
+            logger.info("regex '%s' matched the logs" % regex)
             return True
         if time.time() > start_time + timeout:
             break
@@ -215,7 +215,7 @@ def run_log_contains_msg(context, message, timeout):
     while True:
         logs = container.get_output().decode()
         if message in logs:
-            logging.info("Message '%s' was found in the logs" % message)
+            logger.info("Message '%s' was found in the logs" % message)
             return True
         if time.time() > start_time + timeout:
             break
@@ -241,15 +241,15 @@ def run_log_contains_msg_multiple_times(context, message, num, timeout):
         logs = container.get_output().decode()
         count = logs.count(message)
         if count > expected:
-            logging.info(
+            logger.info(
                 "Message '%s' was found in the logs %d times although expected is %d" % (message, count, expected))
             return False
         if time.time() > start_time + timeout:
             if count == expected:
-                logging.info("Message '%s' was found in the logs %d times" % (message, expected))
+                logger.info("Message '%s' was found in the logs %d times" % (message, expected))
                 return True
             else:
-                logging.info(
+                logger.info(
                     "Message '%s' was found in the logs %d times although expected is %d" % (message, count, expected))
                 break
         # TODO: Add customization option for sleep time
@@ -321,20 +321,20 @@ def run_command_expect_message(context, cmd, output_phrase, timeout=80):
     last_output = ''
     # If timeout is set to 0, then we'll run the specific command only once
     if timeout == 0:
-        logging.debug("Running command %s in container" % (cmd))
+        logger.debug("Running command %s in container" % (cmd))
         last_output = container.execute(cmd=cmd).decode()
-        logging.debug("Output from command %s in container: %s" % (cmd, last_output))
+        logger.debug("Output from command %s in container: %s" % (cmd, last_output))
         if (not output_phrase) or output_phrase in last_output:
             return True
         else:
             exception_cause = "Output not found with timeout 0"
     else:
-        logging.debug("Running command %s in container with timeout %d" % (cmd, timeout))
+        logger.debug("Running command %s in container with timeout %d" % (cmd, timeout))
         while time.time() < start_time + timeout:
             last_output = None
             try:
                 last_output = container.execute(cmd=cmd).decode()
-                logging.debug("Output from command %s in container: %s" % (cmd, last_output))
+                logger.debug("Output from command %s in container: %s" % (cmd, last_output))
                 if output_phrase in last_output:
                     return True
             except ExecException as e:

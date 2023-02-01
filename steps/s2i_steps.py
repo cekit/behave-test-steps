@@ -10,7 +10,7 @@ from steps import _execute
 
 LOG_FORMAT = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 logging.basicConfig(format=LOG_FORMAT)
-
+logger = logging.getLogger("cekit")
 
 def s2i_inner(context, application, path='.', env="", incremental=False, tag="master", runtime_image=""):
     """Perform an S2I build, that may fail or succeed."""
@@ -34,7 +34,7 @@ def s2i_inner(context, application, path='.', env="", incremental=False, tag="ma
         mirror, path, tag, env, application, context.image, image_id, "--incremental" if incremental else "",
         "--runtime-image="+runtime_image if runtime_image else ""
     )
-    logging.info("Executing new S2I build with the command [%s]..." % command)
+    logger.info("Executing new S2I build with the command [%s]..." % command)
 
     output = _execute(command)
     if output:
@@ -59,7 +59,7 @@ def s2i_build(context, application, path='.', env="", incremental=False, tag="ma
     """Perform an S2I build, that must succeed."""
     if s2i_inner(context, application, path, env, incremental, tag, runtime_image):
         image_id = "integ-" + context.image
-        logging.info("S2I build succeeded, image %s was built" % image_id)
+        logger.info("S2I build succeeded, image %s was built" % image_id)
         if run:
             container = Container(image_id, name=context.scenario.name)
             container.start()
@@ -70,7 +70,7 @@ def s2i_build(context, application, path='.', env="", incremental=False, tag="ma
 @given(u'failing s2i build {application} from {path} using {tag}')
 def failing_s2i_build(context, application, path='.', env="", incremental=False, tag="master", runtime_image=""):
     if not s2i_inner(context, application, path, env, incremental, tag, runtime_image):
-        logging.info("S2I build failed (as expected)")
+        logger.info("S2I build failed (as expected)")
     else:
         raise Exception("S2I build succeeded when it shouldn't have")
 

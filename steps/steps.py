@@ -12,6 +12,8 @@ from container import ExecException
 
 LOG_FORMAT = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 logging.basicConfig(format=LOG_FORMAT)
+logger = logging.getLogger("cekit")
+
 if os.environ.get('CTF_WAIT_TIME'):
     TIMEOUT = int(os.environ.get('CTF_WAIT_TIME'))
 else:
@@ -24,7 +26,7 @@ def _execute(command, log_output=True):
     with proper log level.
     """
 
-    logging.debug("Executing '%s' command..." % command)
+    logger.debug("Executing '%s' command..." % command)
 
     try:
         proc = subprocess.Popen(command, shell=True,
@@ -59,17 +61,17 @@ def _execute(command, log_output=True):
                         line = line.decode("utf-8")
 
                     out += "%s\n" % line
-                    logging.log(levels[output], line)
+                    logger.log(levels[output], line)
 
         retcode = proc.wait()
 
         if retcode != 0:
-            logging.error(
+            logger.error(
                 "Command '%s' returned code was %s, check logs" % (command, retcode))
             return False
 
     except subprocess.CalledProcessError:
-        logging.error("Command '%s' failed, check logs" % command)
+        logger.error("Command '%s' failed, check logs" % command)
         return False
 
     if log_output:
@@ -166,7 +168,7 @@ def check_page_is_served(context):
 
 
 def handle_request(context, port, wait, timeout, expected_status_code, path, expected_phrase, username, password, request_method, content_type, request_body):
-    logging.info("Checking if the container is returning status code %s on port %s" % (
+    logger.info("Checking if the container is returning status code %s on port %s" % (
         expected_status_code, port))
 
     start_time = time.time()
@@ -191,10 +193,10 @@ def handle_request(context, port, wait, timeout, expected_status_code, path, exp
         except Exception as ex:
             # Logging as warning, bcause this does not neccessarily means
             # something bad. For example the server did not boot yet.
-            logging.warn("Exception caught: %s" % repr(ex))
+            logger.warn("Exception caught: %s" % repr(ex))
         else:
             latest_status_code = response.status_code
-            logging.info("Response code from the container on port %s: %s (expected: %s)" % (
+            logger.info("Response code from the container on port %s: %s (expected: %s)" % (
                 port, latest_status_code, expected_status_code))
             if latest_status_code == expected_status_code:
                 if not expected_phrase:
@@ -203,7 +205,7 @@ def handle_request(context, port, wait, timeout, expected_status_code, path, exp
 
                 if expected_phrase in response.text:
                     # The expected_phrase parameter was found in the body
-                    logging.info(
+                    logger.info(
                         "Document body contains the '%s' phrase!" % expected_phrase)
                     return True
                 else:
@@ -221,7 +223,7 @@ def check_port_open(context, port):
     start_time = time.time()
 
     ip = context.containers[-1].ip_address
-    logging.info("connecting to %s port %s" % (ip, port))
+    logger.info("connecting to %s port %s" % (ip, port))
     while time.time() < start_time + TIMEOUT:
         try:
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -230,7 +232,7 @@ def check_port_open(context, port):
             s.close()
             return True
         except Exception as ex:
-            logging.debug("not connected yes %s" % ex)
+            logger.debug("not connected yes %s" % ex)
         time.sleep(1)
     raise Exception("Port %s is not open" % port)
 
@@ -244,7 +246,7 @@ def check_file_exists(context, file_name, file_type=None):
     try:
         container.execute("test -e %s" % file_name)
     except ExecException as ex:
-        logging.error(ex.output)
+        logger.error(ex.output)
         raise Exception("File %s does not exist" % file_name)
 
     if file_type:
@@ -252,13 +254,13 @@ def check_file_exists(context, file_name, file_type=None):
             try:
                 container.execute("test -d %s" % file_name)
             except ExecException as e:
-                logging.error(e.output)
+                logger.error(e.output)
                 raise Exception("File %s is not a directory" % file_name)
         elif file_type == "symlink":
             try:
                 container.execute("test -L %s" % file_name)
             except ExecException as e:
-                logging.error(e.output)
+                logger.error(e.output)
                 raise Exception("File %s is not a symlink" % file_name)
 
     return True
@@ -287,7 +289,7 @@ def check_file_count(context, path, count):
             raise Exception("Incorrect file count in the %s directory: expected %s files, found %s" % (
                 path, target_count, file_count))
     except Exception as e:
-        logging.exception(e)
+        logger.exception(e)
         raise Exception("Failed to count files at path %s" % path)
 
     return True
