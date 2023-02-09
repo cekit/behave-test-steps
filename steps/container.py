@@ -57,7 +57,7 @@ class Container(object):
         self.save_output = save_output
         self.remove_image = remove_image
         self.kwargs = kwargs
-        self.logging = logging.getLogger("cekit")
+        self.logger = logging.getLogger("cekit")
         self.running = False
         self.volumes = volumes
         self.environ = {}
@@ -69,7 +69,7 @@ class Container(object):
                 self.volumes = [] if self.volumes is None else None
                 self.volumes.extend(os.environ["CTF_DOCKER_VOLUMES"].split(','))
         except Exception as e:
-            self.logging.error("Cannot parse CTF_DOCKER_VOLUME variable %s", e)
+            self.logger.error("Cannot parse CTF_DOCKER_VOLUME variable %s", e)
 
         # get env from env (CTF_DOCKER_ENV="foo=bar,env=baz")
         try:
@@ -78,7 +78,7 @@ class Container(object):
                     name, value = variable.split('=', 1)
                     self.environ.update({name: value})
         except Exception as e:
-            self.logging.error("Cannot parse CTF_DOCKER_ENV variable, %s", e)
+            self.logger.error("Cannot parse CTF_DOCKER_ENV variable, %s", e)
 
     def __enter__(self):
         self.start(**self.kwargs)
@@ -91,18 +91,18 @@ class Container(object):
     def start(self, **kwargs):
         """ Starts a detached container for selected image """
         self._create_container(**kwargs)
-        self.logging.debug("Starting container '%s'..." % self.container.get('Id'))
+        self.logger.debug("Starting container '%s'..." % self.container.get('Id'))
         d.start(container=self.container)
         self.running = True
         self.ip_address = self.inspect()['NetworkSettings']['IPAddress']
 
     def _remove_container(self, number=1):
-        self.logging.info("Removing container '%s', %s try..." % (self.container['Id'], number))
+        self.logger.info("Removing container '%s', %s try..." % (self.container['Id'], number))
         try:
             d.remove_container(self.container)
-            self.logging.info("Container '%s' removed", self.container['Id'])
+            self.logger.info("Container '%s' removed", self.container['Id'])
         except:
-            self.logging.info("Removing container '%s' failed" % self.container['Id'])
+            self.logger.info("Removing container '%s' failed" % self.container['Id'])
 
             if number > 3:
                 raise
@@ -130,7 +130,7 @@ class Container(object):
                 print(d.logs(container=self.container.get('Id'), stream=False), file=f)
 
         if self.container:
-            self.logging.debug("Removing container '%s'" % self.container['Id'])
+            self.logger.debug("Removing container '%s'" % self.container['Id'])
             # Kill only running container
             if self.inspect()['State']['Running']:
                 d.kill(container=self.container)
@@ -138,11 +138,10 @@ class Container(object):
             self._remove_container()
             self.container = None
 
-
     def startWithCommand(self, **kwargs):
         """ Starts a detached container for selected image with a custom command"""
         self._create_container(tty=True, **kwargs)
-        self.logging.debug("Starting container '%s'..." % self.container.get('Id'))
+        self.logger.debug("Starting container '%s'..." % self.container.get('Id'))
         d.start(self.container)
         self.running = True
         self.ip_address = self.inspect()['NetworkSettings']['IPAddress']
@@ -151,7 +150,7 @@ class Container(object):
         """ executes cmd in container and return its output """
         inst = d.exec_create(container=self.container, cmd=cmd)
 
-        if (detach):
+        if detach:
             d.exec_start(inst, detach)
             return None
 
@@ -183,7 +182,7 @@ class Container(object):
             return d.attach(container=self.container, stream=False, logs=history)
 
     def remove_image(self, force=False):
-        self.logging.info("Removing image %s" % self.image_id)
+        self.logger.info("Removing image %s" % self.image_id)
         d.remove_image(image=self.image_id, force=force)
 
     def copy_file_to_container(self, src_file, dest_folder):
@@ -205,7 +204,7 @@ class Container(object):
     def _create_container(self, **kwargs):
         """ Creates a detached container for selected image """
         if self.running:
-            self.logging.debug("Container is running")
+            self.logger.debug("Container is running")
             return
 
         volume_mount_points = None
@@ -231,7 +230,7 @@ class Container(object):
             kwargs.update(dict(environment=kwargs_env))
             del kwargs["env_json"]
 
-        self.logging.debug("Creating container from image '%s'..." % self.image_id)
+        self.logger.debug("Creating container from image '%s'..." % self.image_id)
 
         # we need to split kwargs to the args with belongs to create_host_config and
         # create_container - be aware - this moved to different place for new docker
@@ -247,7 +246,7 @@ class Container(object):
                     pass
 
         debug = " ".join(f"-e {k}={v}" for k,v in kwargs.get("environment").items())
-        self.logging.debug(f"Creating docker container with arguments and image: {debug} {self.image_id}")
+        self.logger.debug(f"Creating docker container with arguments and image: {debug} {self.image_id}")
         self.container = d.create_container(image=self.image_id,
                                             detach=True,
                                             entrypoint=self.entrypoint,

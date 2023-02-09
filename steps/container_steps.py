@@ -5,9 +5,8 @@ import logging
 from steps import TIMEOUT
 from container import Container, ExecException
 
-LOG_FORMAT = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-logging.basicConfig(format=LOG_FORMAT)
 logger = logging.getLogger("cekit")
+
 
 @when(u'container is ready')
 def container_is_started(context, pname="java"):
@@ -101,7 +100,7 @@ def start_container_with_entrypoint(context, entrypoint):
     container = Container(context.config.userdata['IMAGE'], name=context.scenario.name, entrypoint=entrypoint)
     container.start()
     context.containers.append(container)
-    wait_for_process(context, entrypoint)    
+    wait_for_process(context, entrypoint)
 
 
 @given(u'container is started with command {cmd}')
@@ -197,8 +196,6 @@ def run_log_matches_regex(context, regex, timeout):
             break
         # TODO: Add customization option for sleep time
         time.sleep(1)
-    else:
-        return False
 
 
 def run_log_contains_msg(context, message, timeout):
@@ -221,8 +218,6 @@ def run_log_contains_msg(context, message, timeout):
             break
         # TODO: Add customization option for sleep time
         time.sleep(1)
-    else:
-        return False
 
 
 def run_log_contains_msg_multiple_times(context, message, num, timeout):
@@ -254,8 +249,6 @@ def run_log_contains_msg_multiple_times(context, message, num, timeout):
                 break
         # TODO: Add customization option for sleep time
         time.sleep(1)
-    else:
-        return False
 
 
 @then(u'all files under {path} are writeable by current user')

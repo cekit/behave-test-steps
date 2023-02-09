@@ -22,9 +22,11 @@ def register_xml_namespaces(context):
 def check_xpath(context, xml_file, xpath, value):
     return check_xpath_internal(context, xml_file, xpath, value, False)
 
+
 @then('XML file {xml_file} should contain trimmed value {value} on XPath {xpath}')
 def check_xpath_stripped(context, xml_file, xpath, value):
     return check_xpath_internal(context, xml_file, xpath, value, True)
+
 
 def check_xpath_internal(context, xml_file, xpath, value, strip, timeout=TIMEOUT):
     timeout = float(timeout)
@@ -72,6 +74,7 @@ def safe_cast_int(value, default=None):
         return int(value)
     except ValueError:
         return default
+
 
 def compare_strings(value1, value2, strip):
     if strip:

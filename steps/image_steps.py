@@ -1,5 +1,4 @@
 import docker
-import logging
 
 
 from behave import then
@@ -9,9 +8,6 @@ try:
     DOCKER_CLIENT = docker.Client(version="1.22")
 except:
     DOCKER_CLIENT = docker.APIClient(version="1.22")
-
-LOG_FORMAT = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-logging.basicConfig(format=LOG_FORMAT)
 
 
 @then(u'the image should contain label {label}')
@@ -34,9 +30,9 @@ def label_exists(context, label, check="with", value=None):
         return True
 
     if check == "with" and actual_value == value:
-            return True
+        return True
     elif check == "containing" and actual_value.find(value) >= 0:
-            return True
+        return True
 
     raise Exception("The %s label does not contain %s value, current value: %s" % (label, value, actual_value))
 

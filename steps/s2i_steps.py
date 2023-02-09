@@ -8,9 +8,8 @@ from container import Container
 from steps import _execute
 
 
-LOG_FORMAT = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-logging.basicConfig(format=LOG_FORMAT)
 logger = logging.getLogger("cekit")
+
 
 def s2i_inner(context, application, path='.', env="", incremental=False, tag="master", runtime_image=""):
     """Perform an S2I build, that may fail or succeed."""
@@ -28,7 +27,7 @@ def s2i_inner(context, application, path='.', env="", incremental=False, tag="ma
 
     if os.getenv("MAVEN_MIRROR_URL", False):
         mirror = "-e 'MAVEN_MIRROR_URL=%s'" % os.getenv("MAVEN_MIRROR_URL")
-        
+
     image_id = "integ-" + context.image
     command = "s2i build --loglevel=5 --pull-policy if-not-present %s --context-dir=%s -r=%s %s %s %s %s %s %s" % (
         mirror, path, tag, env, application, context.image, image_id, "--incremental" if incremental else "",
@@ -41,10 +40,12 @@ def s2i_inner(context, application, path='.', env="", incremental=False, tag="ma
         context.config.userdata['s2i_build_log'] = output
     return output
 
+
 @given(u's2i build {application} from {path} without running')
 @given(u's2i build {application} from {path} with env and {incremental} using {tag} without running')
 def s2i_build_no_run(context, application, path='.', env="", incremental=False, tag="master"):
     s2i_build(context, application, path, env, incremental, tag, False, "")
+
 
 @given(u's2i build {application}')
 @given(u's2i build {application} using {tag}')
@@ -67,6 +68,7 @@ def s2i_build(context, application, path='.', env="", incremental=False, tag="ma
     else:
         raise Exception("S2I build failed, check logs!")
 
+
 @given(u'failing s2i build {application} from {path} using {tag}')
 def failing_s2i_build(context, application, path='.', env="", incremental=False, tag="master", runtime_image=""):
     if not s2i_inner(context, application, path, env, incremental, tag, runtime_image):
@@ -82,12 +84,14 @@ def s2i_build_log_should_contain(context, phrase):
 
     raise Exception("Phrase '%s' was not found in the output of S2I" % phrase)
 
+
 @then(u's2i build log should match regex {regex}')
 def s2i_build_log_should_match_regex(context, regex):
     if re.search(regex, context.config.userdata['s2i_build_log'], re.MULTILINE):
         return True
 
     raise Exception("Regex '%s' did not match in the output of S2I" % regex)
+
 
 @then(u's2i build log should not contain {phrase}')
 def s2i_build_log_should_not_contain(context, phrase):

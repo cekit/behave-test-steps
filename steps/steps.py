@@ -10,8 +10,6 @@ import fcntl
 from behave import then, given
 from container import ExecException
 
-LOG_FORMAT = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-logging.basicConfig(format=LOG_FORMAT)
 logger = logging.getLogger("cekit")
 
 if os.environ.get('CTF_WAIT_TIME'):
@@ -56,7 +54,7 @@ def _execute(command, log_output=True):
                 readx = select.select([proc.stdout, proc.stderr], [], [])[0]
                 for output in readx:
                     line = output.readline()[:-1]
-                    
+
                     if isinstance(line, bytes):
                         line = line.decode("utf-8")
 
@@ -125,6 +123,7 @@ def check_page_is_not_served(context):
         return True
     raise Exception("Page was served")
 
+
 @then(u'check that page is served')
 def check_page_is_served(context):
     # set defaults
@@ -174,12 +173,12 @@ def handle_request(context, port, wait, timeout, expected_status_code, path, exp
     start_time = time.time()
     ip = context.containers[-1].ip_address
     latest_status_code = 0
-    auth=None
-    headers=None
-    if (username != None) or (password != None):
-        auth=(username, password)
+    auth = None
+    headers = None
+    if (username is not None) or (password is not None):
+        auth = (username, password)
 
-    if content_type != None:
+    if content_type is not None:
         headers={'Content-type': content_type}
 
     while time.time() < start_time + wait:
@@ -193,7 +192,7 @@ def handle_request(context, port, wait, timeout, expected_status_code, path, exp
         except Exception as ex:
             # Logging as warning, bcause this does not neccessarily means
             # something bad. For example the server did not boot yet.
-            logger.warn("Exception caught: %s" % repr(ex))
+            logger.warning("Exception caught: %s" % repr(ex))
         else:
             latest_status_code = response.status_code
             logger.info("Response code from the container on port %s: %s (expected: %s)" % (
