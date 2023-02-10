@@ -14,10 +14,7 @@ LOG_FORMAT = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 logging.basicConfig(format=LOG_FORMAT)
 logger = logging.getLogger("cekit")
 
-if os.environ.get('CTF_WAIT_TIME'):
-    TIMEOUT = int(os.environ.get('CTF_WAIT_TIME'))
-else:
-    TIMEOUT = 30
+TIMEOUT = int(os.getenv('BEHAVE_TIMEOUT', '30'))
 
 
 def _execute(command, log_output=True):
