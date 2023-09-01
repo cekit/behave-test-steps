@@ -341,13 +341,13 @@ def run_command_expect_message(context, cmd, output_phrase, timeout=80):
 @then('file {filename} should contain {phrase}')
 def file_should_contain(context, filename, phrase):
     filename = context.variables.get(filename[1:], filename)
-    run_command_expect_message(context, 'cat %s' % filename, phrase, timeout=10)
+    run_command_expect_message(context, 'cat %s' % filename, phrase, timeout=TIMEOUT)
 
 
 @then('file {filename} should not contain {phrase}')
 def file_should_not_contain(context, filename, phrase):
     filename = context.variables.get(filename[1:], filename)
-    run_command_unexpect_message(context, 'cat %s' % filename, phrase, timeout=10)
+    run_command_unexpect_message(context, 'cat %s' % filename, phrase, timeout=TIMEOUT)
 
 
 @then(u'inspect container')
