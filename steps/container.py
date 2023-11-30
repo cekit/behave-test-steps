@@ -30,6 +30,7 @@ import re
 import tarfile
 import tempfile
 import time
+import multiprocessing as mp
 
 try:
     d = docker.Client(version="1.22")
@@ -148,26 +149,30 @@ class Container(object):
 
     def execute(self, cmd, detach=False):
         """ executes cmd in container and return its output """
+        self.logger.debug("container.execute(%s,%s)" % (cmd,detach))
         inst = d.exec_create(container=self.container, cmd=cmd)
 
         if detach:
             d.exec_start(inst, detach)
             return None
 
-        output = d.exec_start(inst, detach=detach)
+        ctx = mp.get_context('fork')
+        q = ctx.Queue()
+        p = ctx.Process(target=lambda q: q.put(d.exec_start(inst, detach=detach)), args=(q,))
+        p.start()
+
+        if None == p.join(60): # timeout in secs
+            p.terminate()
+            raise ExecException("container.execute: timeout reading from exec (command '{}')".format(cmd))
+
+        output = q.get()
         retcode = d.exec_inspect(inst)['ExitCode']
 
-        count = 0
-
-        while retcode is None:
-            count += 1
-            retcode = d.exec_inspect(inst)['ExitCode']
-            time.sleep(1)
-            if count > 15:
-                raise ExecException("Command %s timed out, output: %s" % (cmd, output))
+        if retcode is None:
+            raise ExecException("Command %s timed out, output: %s" % (cmd, output))
 
         if retcode != 0:
-            raise ExecException("Command %s failed to execute, return code: %s" % (cmd, retcode), output)
+            raise ExecException("Command %s failed, return code: %s" % (cmd, retcode), output)
 
         return output
 
