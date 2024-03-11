@@ -31,10 +31,7 @@ import tarfile
 import tempfile
 import time
 
-try:
-    d = docker.Client(version="1.22")
-except:
-    d = docker.APIClient(version="1.22")
+d = docker.APIClient()
 
 
 class ExecException(Exception):
