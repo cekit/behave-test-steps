@@ -1,5 +1,9 @@
 name: run behave-test-steps on OpenJDK 17 Runtime Image
-on: [push, pull_request]
+on:
+  push:
+    branches: [ v1 ]
+  pull_request:
+    branches: [ v1 ]
 env:
   LANG:                         en_US.UTF-8
   OPENJDK_CONTAINER_SOURCE_TAG: openjdk-containers-1.13
