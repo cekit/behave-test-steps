@@ -25,7 +25,7 @@ jobs:
           owner: cekit
           repo: cekit
           excludes: prerelease, draft
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: fetch openjdk runtime image
         run: |
           docker pull registry.access.redhat.com/${{ env.OPENJDK_CONTAINER }}:${{ env.OPENJDK_CONTAINER_VERSION }}
