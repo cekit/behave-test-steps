@@ -147,7 +147,7 @@ class Container(object):
         self.running = True
         self.ip_address = self.inspect()['NetworkSettings']['IPAddress']
 
-    def execute(self, cmd, detach=False):
+    def execute(self, cmd, detach=False, timeout=60):
         """ executes cmd in container and return its output """
         self.logger.debug("container.execute(%s,%s)" % (cmd,detach))
         inst = d.exec_create(container=self.container, cmd=cmd)
@@ -161,9 +161,9 @@ class Container(object):
         p = ctx.Process(target=lambda q: q.put(d.exec_start(inst, detach=detach)), args=(q,))
         p.start()
 
-        if None == p.join(60): # timeout in secs
+        if None == p.join(timeout) and p.exitcode == None:
             p.terminate()
-            raise ExecException("container.execute: timeout reading from exec (command '{}')".format(cmd))
+            raise ExecException("container.execute: timeout reading from exec_start (command '{}')".format(cmd))
 
         output = q.get()
         retcode = d.exec_inspect(inst)['ExitCode']
