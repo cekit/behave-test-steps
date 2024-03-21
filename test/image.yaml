@@ -1,0 +1,3 @@
+# dummy descriptor, enough to start tests
+name: ubi9/openjdk-17-runtime
+version: 1.18
