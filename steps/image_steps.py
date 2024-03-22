@@ -1,3 +1,4 @@
+import os
 import docker
 
 
@@ -6,7 +7,8 @@ from behave import then
 # A future version of Cekit will expose this to us, for now we hard-code
 DOCKER_API_VERSION = "1.35"
 
-DOCKER_CLIENT = docker.APIClient(version=DOCKER_API_VERSION)
+base_url = os.environ.get("CTF_API_SOCK", 'unix://var/run/docker.sock')
+DOCKER_CLIENT = docker.APIClient(version=DOCKER_API_VERSION, base_url=base_url)
 
 @then(u'the image should contain label {label}')
 @then(u'the image should contain label {label} {check} value {value}')
