@@ -1,14 +1,43 @@
-# Cekit Behave steps
+# Cekit Behave steps -- Podman edition
 
-This repository contains test steps for the [Behave library](https://github.com/behave/behave) used in the [Cekit tool](https://github.com/cekit/cekit/).
+This branch is intended to be a home for work to get behave-test-steps to work
+with Podman.
 
-## Why external repository?
+Ideally we will continue to work with Docker as well, but the initial priority
+is Podman support even at the expense of Docker.
 
-Because the test steps are rapidly changing by adding new steps or adjusting existing ones
-it does not make sense to combine it together with Cekit releases. These do have different lifecycle. We decided to separate these and so far it's working well.
+## Preparation
 
-## Dependencies (Cekit 3.0+)
+Podman v2.x+ features a REST API which is docker-compatible but also extends it
+with more stuff from the libpod API.
 
-Because test steps have different requirements and these can change over time, Cekit introduced a weak dependency mechanism (see https://github.com/cekit/cekit/pull/357 for more information). In this steps library it is implemented in the `loader.py` file which defines what dependencies are required.
+See <https://docs.podman.io/en/latest/_static/api.html>
 
-This information will let Cekit check **at runtime** if requirements are met and if not, user will be notified. If you are running on a known platform, in case a depenency is missing, you will be provided with a hint what to install to satisfy the requirement.
+Starting the API endpoint as a user
+
+    podman system service -t 5000 # lifetime in seconds. -t 0 = forever
+
+socket is `/run/user/$(id -u)/podman/podman.sock`
+
+Note: there are packages to set this up as a replacement for the docker daemon
+socket (`podman-docker` RPM). We don't rely on this because we want to support
+concurrent use of podman and docker.
+
+You *might* have systemd sockets and services defined to start the daemon
+
+    systemctl --user enable podman.service
+    systemctl --user start podman.service
+
+
+## Testing
+
+Set the environment variable `CTF_API_SOCK` to a URI corresponding to the Podman
+socket, e.g.
+
+    export CTF_API_SOCK=unix:///run/user/1000/podman/podman.sock
+
+Run a test using cekit, e.g.
+
+    cekit --descriptor ubi8-openjdk-11.yaml test behave --wip \
+        --steps-url https://github.com/jmtd/behave-test-steps \
+        --steps-ref podman
