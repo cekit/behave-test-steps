@@ -29,10 +29,19 @@ def s2i_inner(context, application, path='.', env="", incremental=False, tag="ma
         mirror = "-e 'MAVEN_MIRROR_URL=%s'" % os.getenv("MAVEN_MIRROR_URL")
 
     image_id = "integ-" + context.image
-    command = "s2i build --loglevel=5 --pull-policy if-not-present %s --context-dir=%s -r=%s %s %s %s %s %s %s" % (
-        mirror, path, tag, env, application, context.image, image_id, "--incremental" if incremental else "",
-        "--runtime-image="+runtime_image if runtime_image else ""
-    )
+
+    command = f"""s2i build --loglevel=5 --pull-policy if-not-present\
+            {mirror}\
+            --context-dir={path}\
+            -r={tag}\
+            {env}\
+            {application}\
+            {context.image}\
+            {image_id}\
+            {"--incremental" if incremental else ""}\
+            {"--runtime-image="+runtime_image if runtime_image else ""}\
+    """
+
     logger.info("Executing new S2I build with the command [%s]..." % command)
 
     success, output = _execute(command)
