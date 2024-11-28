@@ -6,6 +6,7 @@ import logging
 import select
 import socket
 import fcntl
+from typing import Tuple
 
 from behave import then, given
 from container import ExecException
@@ -15,7 +16,7 @@ logger = logging.getLogger("cekit")
 TIMEOUT = int(os.getenv('BEHAVE_TIMEOUT', '30'))
 
 
-def _execute(command, log_output=True):
+def _execute(command, log_output=True) -> Tuple[bool, str]:
     """
     Helper method to execute a shell command and redirect the logs to logger
     with proper log level.
