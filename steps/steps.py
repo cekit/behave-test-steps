@@ -44,8 +44,8 @@ def _execute(command, log_output=True):
             fcntl.fcntl(proc.stdout.fileno(), fcntl.F_GETFL) | os.O_NONBLOCK,
         )
 
+        out = ""
         if log_output:
-            out = ""
 
             while proc.poll() is None:
                 readx = select.select([proc.stdout, proc.stderr], [], [])[0]
@@ -63,16 +63,13 @@ def _execute(command, log_output=True):
         if retcode != 0:
             logger.error(
                 "Command '%s' returned code was %s, check logs" % (command, retcode))
-            return False
+            return False, out
 
     except subprocess.CalledProcessError:
         logger.error("Command '%s' failed, check logs" % command)
-        return False
+        return False, out
 
-    if log_output:
-        return out
-    else:
-        return True
+    return True, out
 
 
 @then(u'check that page is not served')

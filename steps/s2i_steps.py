@@ -35,10 +35,9 @@ def s2i_inner(context, application, path='.', env="", incremental=False, tag="ma
     )
     logger.info("Executing new S2I build with the command [%s]..." % command)
 
-    output = _execute(command)
-    if output:
-        context.config.userdata['s2i_build_log'] = output
-    return output
+    success, output = _execute(command)
+    context.config.userdata['s2i_build_log'] = output
+    return success
 
 
 @given(u's2i build {application} from {path} without running')
