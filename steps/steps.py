@@ -96,7 +96,7 @@ def check_page_is_not_served(context):
         if row['property'] == 'wait':
             wait = int(row['value'])
         if row['property'] == 'timeout':
-            timeout = row['value']
+            timeout = float(row['value'])
         if row['property'] == 'expected_phrase':
             expected_phrase = row['value']
         if row['property'] == 'path':
@@ -142,7 +142,7 @@ def check_page_is_served(context):
         if row['property'] == 'wait':
             wait = int(row['value'])
         if row['property'] == 'timeout':
-            timeout = row['value']
+            timeout = float(row['value'])
         if row['property'] == 'expected_phrase':
             expected_phrase = row['value']
         if row['property'] == 'path':
