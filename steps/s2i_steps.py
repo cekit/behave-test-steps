@@ -68,6 +68,7 @@ def s2i_build(context, application, path='.', env="", incremental=False, tag="ma
         raise Exception("S2I build failed, check logs!")
 
 
+@given(u'failing s2i build {application} from {path}')
 @given(u'failing s2i build {application} from {path} using {tag}')
 def failing_s2i_build(context, application, path='.', env="", incremental=False, tag="master", runtime_image=""):
     if not s2i_inner(context, application, path, env, incremental, tag, runtime_image):
