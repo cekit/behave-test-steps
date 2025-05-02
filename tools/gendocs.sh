@@ -21,11 +21,15 @@ cat <<EOF
     </header>
 EOF
 
-behave --dry-run --format=steps.catalog --no-summary |
-    sed -E 's!^((Given|When|Then).*)$!## \1\n!'      | # turn steps into Mdwn headers
-    sed -E 's#Location: (.*:.*)#[\1](\1)\n#'         | # mdwn-link to implementation
-    sed -E 's#^    ##'                               | # stop preformatted descriptions
-    python3 -m markdown
+fork="cekit" # TODO: permit override from environment
+branch="v1"
+linkroot="https://github.com/${fork}/behave-test-steps/blob/${branch}/"
+
+behave --dry-run --format=steps.catalog --no-summary              |
+    sed -E 's!^((Given|When|Then).*)$!## \1\n!'                   | # turn steps into Mdwn headers
+    sed -E "s#Location: (.*):(.*)#[\1:\2](${linkroot}\1\#L\2)\n#" | # mdwn-link to the implementation
+    sed -E 's#^    ##'                                            | # stop preformatted descriptions                                            # convert to HTML
+    python3 -m markdown                                             # convert to HTML
 
 cat <<EOF
 
