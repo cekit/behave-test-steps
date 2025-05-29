@@ -35,7 +35,8 @@ import multiprocessing as mp
 # A future version of Cekit will expose this to us, for now we hard-code
 DOCKER_API_VERSION = "1.35"
 
-d = docker.APIClient(version=DOCKER_API_VERSION)
+base_url = os.environ.get("DOCKER_HOST", docker.constants.DEFAULT_UNIX_SOCKET)
+d = docker.APIClient(version=DOCKER_API_VERSION, base_url=base_url)
 
 
 class ExecException(Exception):
