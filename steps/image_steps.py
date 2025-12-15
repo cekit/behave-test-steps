@@ -4,11 +4,10 @@ import docker
 
 from behave import then
 
-# A future version of Cekit will expose this to us, for now we hard-code
-DOCKER_API_VERSION = "1.35"
+DOCKER_MIN_API_VERSION = os.getenv("DOCKER_MIN_API_VERSION", "1.44")
 
-base_url = os.environ.get("DOCKER_HOST", docker.constants.DEFAULT_UNIX_SOCKET)
-DOCKER_CLIENT = docker.APIClient(version=DOCKER_API_VERSION, base_url=base_url)
+base_url = os.getenv("DOCKER_HOST", docker.constants.DEFAULT_UNIX_SOCKET)
+DOCKER_CLIENT = docker.APIClient(version=DOCKER_MIN_API_VERSION, base_url=base_url)
 
 @then(u'the image should contain label {label}')
 @then(u'the image should contain label {label} {check} value {value}')
