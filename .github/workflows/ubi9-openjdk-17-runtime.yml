@@ -17,7 +17,7 @@ jobs:
     strategy:
       fail-fast: false
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: fetch and tag openjdk runtime image
         run: |
           docker pull registry.access.redhat.com/${{ env.OPENJDK_CONTAINER }}:${{ env.OPENJDK_CONTAINER_VERSION }}
